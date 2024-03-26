@@ -11,6 +11,7 @@ jobs:
       with:
         path: |
           ~/.ssh/known_hosts
+        key: ssh-known-hosts
     - name: Set up software
       if: runner.os == 'macOS'
       run:
