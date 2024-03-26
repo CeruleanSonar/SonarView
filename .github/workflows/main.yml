@@ -6,6 +6,11 @@ jobs:
     # note that we can't build for macOS from Linux
     runs-on: macos-latest
     steps:
+    - name: Cache Host keys
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.ssh/known_hosts
     - name: Set up software
       if: runner.os == 'macOS'
       run:
@@ -14,7 +19,7 @@ jobs:
       run: |
         eval "$(ssh-agent -s)"
         ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
-        hg clone --ssh="ssh -o 'StrictHostKeyChecking no'" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
+        hg clone --ssh="ssh -o 'StrictHostKeyChecking accept-new'" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
