@@ -18,6 +18,7 @@ jobs:
       run: |
         cd ./sonarview
         npm i
+        npm i --save-optional dmg-license # a dependency of electron-builder when building for mac
         npx quasar build -m electron -T all -P always
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
