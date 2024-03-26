@@ -7,7 +7,6 @@ jobs:
     - name: Mercurial Clone
       run: |
         eval "$(ssh-agent -s)"
-        ssh 
         ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
         hg clone --ssh="ssh -o 'StrictHostKeyChecking no'" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
     - name: Setup Node
