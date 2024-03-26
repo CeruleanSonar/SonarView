@@ -25,11 +25,15 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: lts/*
-    - name: Build
+    - name: Prebuild
       run: |
         cd ./sonarview
         npm ci
-        # npm i --save-dev dmg-license # a dependency of electron-builder when building for macOS
+        # patch repo name so electron-builder puts releases in THIS repo
+        npm pkg set repository.url="${{ github.repositoryUrl }}"
+    - name: Build
+      run: |
+        cd ./sonarview
         npx quasar build -m electron -T all -P always
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
