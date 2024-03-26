@@ -8,7 +8,7 @@ jobs:
       run: |
         eval "$(ssh-agent -s)"
         ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
-        hg clone ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
+        hg clone --insecure ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
