@@ -1,0 +1,19 @@
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: use ssh key
+      run: ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
+    - name: Mercurial Clone
+      run: hg clone ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+    - name: Build
+      run: |
+        cd ./sonarview
+        npm i
+        npm run build:electron all
