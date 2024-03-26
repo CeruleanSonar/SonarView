@@ -3,7 +3,8 @@ on:
   push:
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # note that we can't build for macOS from Linux
+    runs-on: macos-latest
     steps:
     - name: Mercurial Clone
       run: |
@@ -18,7 +19,7 @@ jobs:
       run: |
         cd ./sonarview
         npm i
-        npm i --save-dev dmg-license # a dependency of electron-builder when building for macOS
+        # npm i --save-dev dmg-license # a dependency of electron-builder when building for macOS
         npx quasar build -m electron -T all -P always
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
