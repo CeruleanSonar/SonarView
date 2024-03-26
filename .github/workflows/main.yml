@@ -4,10 +4,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: use ssh key
-      run: ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
     - name: Mercurial Clone
-      run: hg clone ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
+      run: |
+        eval "$(ssh-agent -s)"
+        ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
+        hg clone ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
