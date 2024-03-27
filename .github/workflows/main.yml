@@ -19,12 +19,12 @@ jobs:
     - name: Add code signing dependencies
       if: runner.os == 'macOS'
       run: |
-        echo "${APPLE_CERT_BASE64}" | base64 --decode > $CERTFILE
+        echo "${APPLE_P12_BASE64}" | base64 --decode > $CERTFILE
         security import $CERTFILE -P ''
         rm $CERTFILE
       env:
         CERTFILE: ${{ runner.temp }}/apple.p12
-        APPLE_CERT_BASE64: ${{ secrets.APPLE_CERT_BASE64 }}
+        APPLE_P12_BASE64: ${{ secrets.APPLE_P12_BASE64 }}
     - name: Mercurial Clone
       run: |
         eval "$(ssh-agent -s)"
