@@ -21,7 +21,7 @@ jobs:
       run: |
         echo "${{ secrets.APPLE_P12_BASE64 }}" | base64 --decode > ${{ runner.temp }}/apple.p12
         echo CSC_LINK=${{ runner.temp }}/apple.p12 >> $GITHUB_ENV
-        echo CSC_KEY_PASSWORD= >> $GITHUB_ENV
+        echo CSC_KEY_PASSWORD=mysecurepassword >> $GITHUB_ENV
     - name: Mercurial Clone
       run: |
         eval "$(ssh-agent -s)"
