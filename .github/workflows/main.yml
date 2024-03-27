@@ -47,4 +47,8 @@ jobs:
         cd ./sonarview
         npx quasar build -m electron -T all -P always
       env:
+        # for creating github release
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # for notarization
+        APPLE_ID: ${{ secrets.APPLE_ID }}
+        APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
