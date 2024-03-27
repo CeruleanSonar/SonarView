@@ -17,9 +17,10 @@ jobs:
       run:
         brew install mercurial jaq
     - name: Add code signing dependencies
+      if: runner.os == 'macOS'
       run: |
         echo "${APPLE_CERT_BASE64}" | base64 --decode > $CERTFILE
-        security import $CERTFILE
+        security import $CERTFILE -P ''
         rm $CERTFILE
       env:
         CERTFILE: ${{ runner.temp }}/apple.p12
