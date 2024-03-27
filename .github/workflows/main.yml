@@ -42,7 +42,7 @@ jobs:
         
         jaq -i '.repository.url="${{ github.repositoryUrl }}"' package.json
         # delete lines starting with `identity:` (un-disables mac code signing)
-        sed '/^\w*identity:/d' quasar.config.js
+        sed -i '' '/^\w*identity:/d' quasar.config.js
     - name: Build
       run: |
         cd ./sonarview
