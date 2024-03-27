@@ -5,6 +5,9 @@ jobs:
   build:
     # note that we can't build for macOS from Linux
     runs-on: macos-latest
+    env:
+      CSC_LINK: ${{ runner.temp }}/apple.p12
+      CSC_KEY_PASSWORD: ""
     steps:
     - name: Cache Host keys
       uses: actions/cache@v4
@@ -19,12 +22,7 @@ jobs:
     - name: Add code signing dependencies
       if: runner.os == 'macOS'
       run: |
-        echo "${APPLE_P12_BASE64}" | base64 --decode > $CERTFILE
-        security import $CERTFILE -P ''
-        rm $CERTFILE
-      env:
-        CERTFILE: ${{ runner.temp }}/apple.p12
-        APPLE_P12_BASE64: ${{ secrets.APPLE_P12_BASE64 }}
+        echo "${{ secrets.APPLE_P12_BASE64 }}" | base64 --decode > $CSC_LINK
     - name: Mercurial Clone
       run: |
         eval "$(ssh-agent -s)"
@@ -43,6 +41,7 @@ jobs:
         
         jaq -i '.repository.url="${{ github.repositoryUrl }}"' package.json
         # delete lines starting with `identity:` (un-disables mac code signing)
+        # note that code signing options passed via CSC_... environment variables
         sed -i.bak '/^\w*identity:/d' quasar.config.js
     - name: Build
       run: |
