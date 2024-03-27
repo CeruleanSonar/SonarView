@@ -12,10 +12,18 @@ jobs:
         path: |
           ~/.ssh/known_hosts
         key: ssh-known-hosts
-    - name: Set up software
+    - name: Install software
       if: runner.os == 'macOS'
       run:
-        brew install mercurial
+        brew install mercurial jaq
+    - name: Add code signing dependencies
+      run: |
+        echo "${APPLE_CERT_BASE64}" | base64 --decode > $CERTFILE
+        security import $CERTFILE
+        rm $CERTFILE
+      env:
+        CERTFILE: ${{ runner.temp }}/apple.p12
+        APPLE_CERT_BASE64: ${{ secrets.APPLE_CERT_BASE64 }}
     - name: Mercurial Clone
       run: |
         eval "$(ssh-agent -s)"
@@ -30,7 +38,11 @@ jobs:
         cd ./sonarview
         npm ci
         # patch repo name so electron-builder puts releases in THIS repo
-        npm pkg set repository.url="${{ github.repositoryUrl }}"
+        # npm pkg set repository.url="${{ github.repositoryUrl }}"
+        
+        jaq -i '.repository.url="${{ github.repositoryUrl }}"' package.json
+        # delete lines starting with `identity:` (un-disables mac code signing)
+        sed '/^\w*identity:/d' quasar.config.js
     - name: Build
       run: |
         cd ./sonarview
