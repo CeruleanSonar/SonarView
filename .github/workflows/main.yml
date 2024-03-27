@@ -5,9 +5,6 @@ jobs:
   build:
     # note that we can't build for macOS from Linux
     runs-on: macos-latest
-    env:
-      CSC_LINK: ${{ runner.temp }}/apple.p12
-      CSC_KEY_PASSWORD: ""
     steps:
     - name: Cache Host keys
       uses: actions/cache@v4
@@ -22,7 +19,9 @@ jobs:
     - name: Add code signing dependencies
       if: runner.os == 'macOS'
       run: |
-        echo "${{ secrets.APPLE_P12_BASE64 }}" | base64 --decode > $CSC_LINK
+        echo "${{ secrets.APPLE_P12_BASE64 }}" | base64 --decode > ${{ runner.temp }}/apple.p12
+        echo CSC_LINK=${{ runner.temp }}/apple.p12 >> $GITHUB_ENV
+        echo CSC_KEY_PASSWORD= >> $GITHUB_ENV
     - name: Mercurial Clone
       run: |
         eval "$(ssh-agent -s)"
