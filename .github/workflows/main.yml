@@ -47,3 +47,5 @@ jobs:
         # for notarization
         APPLE_ID: ${{ secrets.APPLE_ID }}
         APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        # electron-builder and electron-notarize are giving me trouble. this prints additional debug info
+        DEBUG: electron-*
