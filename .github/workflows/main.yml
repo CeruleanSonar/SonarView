@@ -1,3 +1,4 @@
+name: SonarView
 on:
   workflow_dispatch:
     inputs:
