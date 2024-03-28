@@ -1,5 +1,10 @@
 on:
   workflow_dispatch:
+    inputs:
+      updaterev:
+        type: string
+        description: which revision to pull
+        default: default
   push:
 jobs:
   build:
@@ -26,7 +31,7 @@ jobs:
       run: |
         eval "$(ssh-agent -s)"
         ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
-        hg clone --branch default --ssh="ssh -o 'StrictHostKeyChecking accept-new'" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
+        hg clone --updaterev "${{ inputs.tags }}" --ssh="ssh -o 'StrictHostKeyChecking accept-new'" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
