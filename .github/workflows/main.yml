@@ -4,7 +4,7 @@ on:
 jobs:
   build:
     # note that we can't build for macOS from Linux
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
     - name: Cache Host keys
       uses: actions/cache@v4
