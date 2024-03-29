@@ -42,7 +42,7 @@ jobs:
     - name: Mercurial Clone
       run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
     - name: deleteme
-      run: echo ~/.ssh/known_hosts
+      run: cat ~/.ssh/known_hosts
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
