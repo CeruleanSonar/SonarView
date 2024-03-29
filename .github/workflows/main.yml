@@ -34,12 +34,6 @@ jobs:
       if: runner.os == 'macOS'
       run:
         brew install mercurial
-    - name: Add code signing dependencies
-      if: runner.os == 'macOS'
-      run: |
-        echo "${{ secrets.APPLE_P12_BASE64 }}" | base64 --decode > ${{ runner.temp }}/apple.p12
-        echo CSC_LINK=${{ runner.temp }}/apple.p12 >> $GITHUB_ENV
-        echo CSC_KEY_PASSWORD=mysecurepassword >> $GITHUB_ENV
     - uses: webfactory/ssh-agent@v0.9.0
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -55,6 +49,16 @@ jobs:
         npm ci
         # patch repo name so electron-builder puts releases in THIS repo
         npm pkg set repository.url="${{ github.repositoryUrl }}"
+    - name: Add code signing dependencies
+      if: runner.os == 'macOS'
+      run: |
+        echo "${{ secrets.APPLE_CSC_BASE64 }}" | base64 --decode -o ${{ runner.temp }}/AppleCSC.p12
+        echo CSC_LINK=${{ runner.temp }}/AppleCSC.p12 >> $GITHUB_ENV
+        echo CSC_KEY_PASSWORD=mysecurepassword >> $GITHUB_ENV
+        echo "${{ secrets.APPLE_API_KEY_BASE64 }}" | base64 --decode -o ${{ runner.temp }}/AppStoreConnect.p8
+        echo APPLE_API_KEY=${{ runner.temp }}/AppStoreConnect.p8 >> $GITHUB_ENV
+        echo APPLE_API_KEY_ID=${{ secrets.APPLE_API_KEY_ID }} >> $GITHUB_ENV
+        echo APPLE_API_ISSUER=${{ secrets.APPLE_API_ISSUER }} >> $GITHUB_ENV
     - name: Build
       run: |
         cd ./sonarview
@@ -62,6 +66,3 @@ jobs:
       env:
         # for creating github release
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        # for notarization - not currently working
-        # APPLE_ID: ${{ secrets.APPLE_ID }}
-        # APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
