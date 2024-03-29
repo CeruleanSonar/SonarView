@@ -13,6 +13,7 @@ jobs:
       matrix:
         # note that we can't build for macOS from Linux
         runner: [macos-14, windows-latest, ubuntu-latest]
+      fail-fast: false
     runs-on:  ${{ matrix.runner }}
     steps:
     - name: Cache Host keys
@@ -31,11 +32,11 @@ jobs:
         echo "${{ secrets.APPLE_P12_BASE64 }}" | base64 --decode > ${{ runner.temp }}/apple.p12
         echo CSC_LINK=${{ runner.temp }}/apple.p12 >> $GITHUB_ENV
         echo CSC_KEY_PASSWORD=mysecurepassword >> $GITHUB_ENV
+    - uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Mercurial Clone
-      run: |
-        eval "$(ssh-agent -s)"
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
-        hg clone --updaterev "${{ inputs.updaterev }}" --ssh="ssh -o 'StrictHostKeyChecking accept-new'" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
+      run: hg clone --updaterev "${{ inputs.updaterev }}" --ssh="ssh -o 'StrictHostKeyChecking accept-new'" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
