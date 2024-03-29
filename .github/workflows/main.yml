@@ -9,8 +9,11 @@ on:
   push:
 jobs:
   build:
-    # note that we can't build for macOS from Linux
-    runs-on: macos-14
+    strategy:
+      matrix:
+        # note that we can't build for macOS from Linux
+        runner: [macos-14, windows-latest, ubuntu-latest]
+    runs-on:  ${{ matrix.runner }}
     steps:
     - name: Cache Host keys
       uses: actions/cache@v4
@@ -21,7 +24,7 @@ jobs:
     - name: Install software
       if: runner.os == 'macOS'
       run:
-        brew install mercurial jaq
+        brew install mercurial
     - name: Add code signing dependencies
       if: runner.os == 'macOS'
       run: |
@@ -32,7 +35,7 @@ jobs:
       run: |
         eval "$(ssh-agent -s)"
         ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
-        hg clone --updaterev "${{ inputs.tags }}" --ssh="ssh -o 'StrictHostKeyChecking accept-new'" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
+        hg clone --updaterev "${{ inputs.updaterev }}" --ssh="ssh -o 'StrictHostKeyChecking accept-new'" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
@@ -42,11 +45,11 @@ jobs:
         cd ./sonarview
         npm ci
         # patch repo name so electron-builder puts releases in THIS repo
-        jaq -i '.repository.url="${{ github.repositoryUrl }}"' package.json
+        npm pkg set repository.url="${{ github.repositoryUrl }}"
     - name: Build
       run: |
         cd ./sonarview
-        npx quasar build -m electron -T all -P always
+        npx quasar build -m electron -P always
       env:
         # for creating github release
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
