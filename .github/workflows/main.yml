@@ -17,11 +17,12 @@ jobs:
     runs-on:  ${{ matrix.runner }}
     steps:
     - name: Install host keys
+      working-directory: '~/.ssh'
       run: |
         echo '
           codebasehq.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIZoKai03b98KTKgySr5fLoWKpM0uuexaWZOOPNp85P/
           codebasehq.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAqafgFtYVquYfReJa3MGIyGz0RZoc1kfnXHFDjprY4Uy0lwia+35rRa9Aycrf4eySa55JXsg7rOosqpNOi2hSFWHQ/FfKzMH077Vu1X6d5gNBzxR3aJq/zaAJSiRbrUM20NgEHzBiT8x+32zM71E4qjKnGG8AdEqV9AmROXHWddLSs3e5Tsr2+Dkc/lu+Ko4eVjFjW3ZUgTRE3VTd+PDSRGOfmimgBpcuhkBbEyK4+dq7NJKxLbUl9zC7jKPddkWpbonR9CYWj+c8R8MimKLhhSilNRUKuQBNYydol3eX8VNi+PTzAYtB/w8/jl3+BWzj6xAyfMRdeJDyhhTYX+/s+w==
-        ' >> ~/.ssh/known_hosts
+        ' >> known_hosts
     - name: Install software
       if: runner.os == 'macOS'
       run:
@@ -36,7 +37,7 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Mercurial Clone
-      run: hg clone --updaterev "${{ inputs.updaterev }}" --ssh="ssh -o 'StrictHostKeyChecking no'" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
+      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
