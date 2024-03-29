@@ -7,32 +7,44 @@ on:
         description: which revision to pull
         default: default
   push:
+defaults:
+  run:
+    shell: bash
 jobs:
   build:
-    # note that we can't build for macOS from Linux
-    runs-on: macos-14
+    strategy:
+      matrix:
+        # note that we can't build for macOS from Linux
+        runner: [macos-14, windows-latest, ubuntu-latest]
+      fail-fast: false
+    runs-on:  ${{ matrix.runner }}
     steps:
     - name: Cache Host keys
+      id: cache-known-hosts
       uses: actions/cache@v4
       with:
-        path: |
-          ~/.ssh/known_hosts
+        path: ~/.ssh/known_hosts
         key: ssh-known-hosts
+    - name: Initialize host keys
+      if: (! steps.cache-known-hosts.outputs.cache-hit)
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan codebasehq.com >> ~/.ssh/known_hosts
     - name: Install software
       if: runner.os == 'macOS'
       run:
-        brew install mercurial jaq
+        brew install mercurial
     - name: Add code signing dependencies
       if: runner.os == 'macOS'
       run: |
         echo "${{ secrets.APPLE_P12_BASE64 }}" | base64 --decode > ${{ runner.temp }}/apple.p12
         echo CSC_LINK=${{ runner.temp }}/apple.p12 >> $GITHUB_ENV
         echo CSC_KEY_PASSWORD=mysecurepassword >> $GITHUB_ENV
+    - uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Mercurial Clone
-      run: |
-        eval "$(ssh-agent -s)"
-        ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
-        hg clone --updaterev "${{ inputs.tags }}" --ssh="ssh -o 'StrictHostKeyChecking accept-new'" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
+      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
@@ -42,11 +54,11 @@ jobs:
         cd ./sonarview
         npm ci
         # patch repo name so electron-builder puts releases in THIS repo
-        jaq -i '.repository.url="${{ github.repositoryUrl }}"' package.json
+        npm pkg set repository.url="${{ github.repositoryUrl }}"
     - name: Build
       run: |
         cd ./sonarview
-        npx quasar build -m electron -T all -P always
+        npx quasar build -m electron -P always
       env:
         # for creating github release
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
