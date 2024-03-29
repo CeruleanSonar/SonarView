@@ -27,7 +27,9 @@ jobs:
         key: ssh-known-hosts
     - name: Initialize host keys
       if: (! steps.cache-known-hosts.outputs.cache-hit)
-      run: ssh-keyscan codebasehq.com >> ~/.ssh/known_hosts
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan codebasehq.com >> ~/.ssh/known_hosts
     - name: Install software
       if: runner.os == 'macOS'
       run:
