@@ -33,9 +33,8 @@ jobs:
         echo CSC_KEY_PASSWORD=mysecurepassword >> $GITHUB_ENV
     - name: Mercurial Clone
       run: |
-        eval "$(ssh-agent -s)"
-        ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
-        hg clone --updaterev "${{ inputs.updaterev }}" --ssh="ssh -o 'StrictHostKeyChecking accept-new'" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ${{ runner.temp }}/sshid
+        hg clone --updaterev "${{ inputs.updaterev }}" --ssh="ssh -o 'StrictHostKeyChecking accept-new' -i ${{ runner.temp }}/sshid" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
