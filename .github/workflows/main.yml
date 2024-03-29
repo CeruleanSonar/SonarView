@@ -20,11 +20,14 @@ jobs:
     runs-on:  ${{ matrix.runner }}
     steps:
     - name: Cache Host keys
+      id: cache-known-hosts
       uses: actions/cache@v4
       with:
-        path: |
-          ~/.ssh/known_hosts
+        path: ~/.ssh/known_hosts
         key: ssh-known-hosts
+    - name: Initialize host keys
+      if: ! steps.cache-known-hosts.outputs.cache-hit
+      run: ssh-keyscan codebasehq.com >> ~/.ssh/known_hosts
     - name: Install software
       if: runner.os == 'macOS'
       run:
@@ -40,8 +43,6 @@ jobs:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Mercurial Clone
       run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
-    - name: deleteme
-      run: cat ~/.ssh/known_hosts
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
