@@ -48,7 +48,7 @@ jobs:
         cd ./sonarview
         npm ci
         # patch repo name so electron-builder puts releases in THIS repo
-        npm pkg set repository.url="${{ github.repositoryUrl }}"
+        # npm pkg set repository.url="${{ github.repositoryUrl }}"
     - name: Add code signing dependencies
       if: runner.os == 'macOS'
       run: |
