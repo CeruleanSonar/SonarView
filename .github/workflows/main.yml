@@ -1,0 +1,70 @@
+name: SonarView
+on:
+  schedule:
+    - cron: "0 6 * * *" # daily at 6 am
+  workflow_dispatch:
+    inputs:
+      updaterev:
+        type: string
+        description: which revision to pull
+        default: default
+  push:
+defaults:
+  run:
+    shell: bash
+jobs:
+  build:
+    strategy:
+      matrix:
+        # note that we can't build for macOS from Linux
+        runner: [macos-14, windows-latest, ubuntu-latest]
+      fail-fast: false
+    runs-on:  ${{ matrix.runner }}
+    steps:
+    - name: Cache Host keys
+      id: cache-known-hosts
+      uses: actions/cache@v4
+      with:
+        path: ~/.ssh/known_hosts
+        key: ssh-known-hosts
+    - name: Initialize host keys
+      if: (! steps.cache-known-hosts.outputs.cache-hit)
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan codebasehq.com >> ~/.ssh/known_hosts
+    - name: Install software
+      if: runner.os == 'macOS'
+      run:
+        brew install mercurial
+    - uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    - name: Mercurial Clone
+      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Prebuild
+      run: |
+        cd ./sonarview
+        npm ci
+        # patch repo name so electron-builder puts releases in THIS repo
+        # npm pkg set repository.url="${{ github.repositoryUrl }}"
+    - name: Add code signing dependencies
+      if: runner.os == 'macOS'
+      run: |
+        echo "${{ secrets.APPLE_CSC_BASE64 }}" | base64 --decode -o ${{ runner.temp }}/AppleCSC.p12
+        echo CSC_LINK=${{ runner.temp }}/AppleCSC.p12 >> $GITHUB_ENV
+        echo CSC_KEY_PASSWORD=mysecurepassword >> $GITHUB_ENV
+        echo "${{ secrets.APPLE_API_KEY_BASE64 }}" | base64 --decode -o ${{ runner.temp }}/AppStoreConnect.p8
+        echo APPLE_API_KEY=${{ runner.temp }}/AppStoreConnect.p8 >> $GITHUB_ENV
+        echo APPLE_API_KEY_ID=${{ secrets.APPLE_API_KEY_ID }} >> $GITHUB_ENV
+        echo APPLE_API_ISSUER=${{ secrets.APPLE_API_ISSUER }} >> $GITHUB_ENV
+    - name: Build
+      run: |
+        cd ./sonarview
+        npx quasar build -m electron -P always
+      env:
+        # for creating github release
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
