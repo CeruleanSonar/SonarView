@@ -48,7 +48,7 @@ jobs:
     - name: Prebuild
       run: |
         cd ./sonarview
-        python3 -m pip install setuptools # workaround for @electron/rebuild using node-gyp 9, which disagrees with python-3.12
+        python3 -m pip install setuptools --break-system-packages # workaround for @electron/rebuild using node-gyp 9, which disagrees with python-3.12
         npm ci
         # patch repo name so electron-builder puts releases in THIS repo
         # npm pkg set repository.url="${{ github.repositoryUrl }}"
