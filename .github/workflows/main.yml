@@ -40,6 +40,8 @@ jobs:
       run: |
         cd ./sonarview
         npm ci
+        docker build --help
+        docker buildx build --help
         docker buildx create --name container-builder --driver docker-container --use --bootstrap
         npm run -w @cs/docker build
   build:
