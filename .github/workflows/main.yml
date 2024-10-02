@@ -40,6 +40,7 @@ jobs:
       run: |
         cd ./sonarview
         npm ci
+        dockerd --feature containerd-snapshotter
         npm run -w @cs/docker build
   build:
     strategy:
