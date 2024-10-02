@@ -13,6 +13,36 @@ defaults:
   run:
     shell: bash
 jobs:
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Cache Host keys
+      id: cache-known-hosts
+      uses: actions/cache@v4
+      with:
+        path: ~/.ssh/known_hosts
+        key: ssh-known-hosts
+    - name: Initialize host keys
+      if: (! steps.cache-known-hosts.outputs.cache-hit)
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan codebasehq.com >> ~/.ssh/known_hosts
+    - uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    - name: Mercurial Clone
+      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Prebuild
+      run: |
+        cd ./sonarview
+        npm ci
+    - name: Build
+      run: |
+        npm -w @cs/docker build
   build:
     strategy:
       matrix:
