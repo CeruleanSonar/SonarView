@@ -37,6 +37,7 @@ jobs:
       with:
         node-version: lts/*
         cache: npm
+        cache-dependency-path: ./sonarview/package-lock.json
     - name: Build
       run: |
         cd ./sonarview
