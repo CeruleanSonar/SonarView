@@ -31,16 +31,14 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Mercurial Clone
-      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
+      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
         node-version: lts/*
         cache: npm
-        cache-dependency-path: ./sonarview/package-lock.json
     - name: Build
       run: |
-        cd ./sonarview
         npm ci
         # Set up for multi-arch building
         docker buildx create --name container-builder --driver docker-container --use --bootstrap
@@ -72,16 +70,14 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Mercurial Clone
-      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg ./sonarview
+      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
         node-version: lts/*
         cache: npm
-        cache-dependency-path: ./sonarview/package-lock.json
     - name: Prebuild
       run: |
-        cd ./sonarview
         npm ci
         # patch repo name so electron-builder puts releases in THIS repo
         # npm pkg set repository.url="${{ github.repositoryUrl }}"
@@ -97,7 +93,6 @@ jobs:
         echo APPLE_API_ISSUER=${{ secrets.APPLE_API_ISSUER }} >> $GITHUB_ENV
     - name: Build
       run: |
-        cd ./sonarview
         npx quasar build -m electron -P always
       env:
         # for creating github release
