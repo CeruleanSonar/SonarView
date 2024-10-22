@@ -26,11 +26,9 @@ jobs:
         eval `ssh-agent`
         echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
         echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
-        echo "HOST *" >> .ssh/config
-        echo: "  StrictHostKeyChecking=accept-new" >> .ssh/config
         ssh-add -vv - <<< '${{ secrets.SSH_PRIVATE_KEY }}'
     - name: Mercurial Clone
-      run: hg --debug clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
+      run: hg --debug clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0'
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
@@ -70,7 +68,7 @@ jobs:
       run:
         brew install mercurial
     - name: Mercurial Clone
-      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
+      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=0'
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
