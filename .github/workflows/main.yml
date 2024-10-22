@@ -22,15 +22,12 @@ jobs:
       with:
         path: ~/.ssh/known_hosts
         key: ssh-known-hosts
-    - name: Initialize host keys
-      if: (! steps.cache-known-hosts.outputs.cache-hit)
-      run: |
-        mkdir -p ~/.ssh
-        ssh-keyscan codebasehq.com >> ~/.ssh/known_hosts
     - run: |
         eval `ssh-agent`
         echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
         echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
+        echo "HOST *" >> .ssh/config
+        echo: "  StrictHostKeyChecking=accept-new" >> .ssh/config
         ssh-add -vv - <<< '${{ secrets.SSH_PRIVATE_KEY }}'
     - name: Mercurial Clone
       run: hg --debug clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
@@ -65,6 +62,8 @@ jobs:
         eval `ssh-agent`
         echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
         echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
+        echo "HOST *" >> .ssh/config
+        echo: "  StrictHostKeyChecking=accept-new" >> .ssh/config
         ssh-add -vv - <<< '${{ secrets.SSH_PRIVATE_KEY }}'
     - name: Install software
       if: runner.os == 'macOS'
