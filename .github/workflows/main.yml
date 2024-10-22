@@ -28,7 +28,7 @@ jobs:
         echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
         ssh-add -vv - <<< '${{ secrets.SSH_PRIVATE_KEY }}'
     - name: Mercurial Clone
-      run: hg --debug clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes'
+      run: hg --debug clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -Tv -o StrictHostKeyChecking=accept-new -o BatchMode=yes'
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
@@ -67,8 +67,8 @@ jobs:
         brew install mercurial
     - name: Mercurial Clone
       run: |
-        ssh -Tv hg@codebasehq.com  -o StrictHostKeyChecking=accept-new -o BatchMode=yes'
-        hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes'
+        ssh -Tv hg@codebasehq.com -o StrictHostKeyChecking=accept-new -o BatchMode=yes
+        hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -Tv -o StrictHostKeyChecking=accept-new -o BatchMode=yes'
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
