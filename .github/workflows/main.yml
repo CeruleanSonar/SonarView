@@ -70,7 +70,6 @@ jobs:
       if: runner.os == 'macOS'
       run:
         brew install mercurial
-    - run: ssh-add - <<< ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Mercurial Clone
       run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
