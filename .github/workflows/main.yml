@@ -29,7 +29,7 @@ jobs:
         path: ~/.ssh/known_hosts
         key: ssh-known-hosts
     - name: Mercurial Clone
-      run: hg clone --noninteractive --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -v -o StrictHostKeyChecking=accept-new -i ~/.ssh/id_hg'
+      run: hg -vvv clone --noninteractive --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -vvv -o StrictHostKeyChecking=accept-new -i ~/.ssh/id_hg'
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
