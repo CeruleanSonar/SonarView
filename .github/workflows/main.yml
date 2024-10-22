@@ -28,7 +28,9 @@ jobs:
         mkdir -p ~/.ssh
         ssh-keyscan codebasehq.com >> ~/.ssh/known_hosts
     - run: |
-        ssh-agent
+        eval `ssh-agent`
+        echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
+        echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
         ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
     - name: Mercurial Clone
       run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
@@ -43,6 +45,8 @@ jobs:
         # Set up for multi-arch building
         docker buildx create --name container-builder --driver docker-container --use --bootstrap
         npm run -w @cs/docker build
+    - if: ${{ always() }}
+      run: ssh-agent -k
   build:
     strategy:
       matrix:
@@ -57,11 +61,11 @@ jobs:
       with:
         path: ~/.ssh/known_hosts
         key: ssh-known-hosts
-    - name: Initialize host keys
-      if: (! steps.cache-known-hosts.outputs.cache-hit)
-      run: |
-        mkdir -p ~/.ssh
-        ssh-keyscan codebasehq.com >> ~/.ssh/known_hosts
+    - run: |
+        eval `ssh-agent`
+        echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
+        echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
+        ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
     - name: Install software
       if: runner.os == 'macOS'
       run:
@@ -95,3 +99,5 @@ jobs:
       env:
         # for creating github release
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - if: ${{ always() }}
+      run: ssh-agent -k
