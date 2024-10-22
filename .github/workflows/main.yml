@@ -16,19 +16,19 @@ jobs:
   build-docker:
     runs-on: ubuntu-latest
     steps:
-    # - name: Cache Host keys
-    #   id: cache-known-hosts
-    #   uses: actions/cache@v4
-    #   with:
-    #     path: ~/.ssh/known_hosts
-    #     key: ssh-known-hosts
+    - name: Cache Host keys
+      id: cache-known-hosts
+      uses: actions/cache@v4
+      with:
+        path: ~/.ssh/known_hosts
+        key: ssh-known-hosts
     - run: |
         eval `ssh-agent`
         echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
         echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
         ssh-add -vv - <<< '${{ secrets.SSH_PRIVATE_KEY }}'
     - name: Mercurial Clone
-      run: hg --debug clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -o StrictHostKeyChecking=allow-new -o BatchMode=yes'
+      run: hg --debug clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes'
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
@@ -50,12 +50,12 @@ jobs:
       fail-fast: false
     runs-on:  ${{ matrix.runner }}
     steps:
-    # - name: Cache Host keys
-    #   id: cache-known-hosts
-    #   uses: actions/cache@v4
-    #   with:
-    #     path: ~/.ssh/known_hosts
-    #     key: ssh-known-hosts
+    - name: Cache Host keys
+      id: cache-known-hosts
+      uses: actions/cache@v4
+      with:
+        path: ~/.ssh/known_hosts
+        key: ssh-known-hosts
     - run: |
         eval `ssh-agent`
         echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
@@ -66,7 +66,7 @@ jobs:
       run:
         brew install mercurial
     - name: Mercurial Clone
-      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -o StrictHostKeyChecking=allow-new -o BatchMode=yes'
+      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes'
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
