@@ -29,7 +29,7 @@ jobs:
         ssh-keyscan codebasehq.com >> ~/.ssh/known_hosts
     - run: |
         ssh-agent
-        ssh-add - <<< ${{ secrets.SSH_PRIVATE_KEY }}
+        ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
     - name: Mercurial Clone
       run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
