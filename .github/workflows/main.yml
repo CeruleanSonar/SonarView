@@ -23,8 +23,10 @@ jobs:
         path: ~/.ssh/known_hosts
         key: ssh-known-hosts
     - run: |
-        echo '${{ secrets.SSH_PRIVATE_KEY }}' > ~/.ssh/id_hg
+        printenv SSH_PRIVATE_KEY > ~/.ssh/id_hg
         chmod 600 ~/.ssh/id_hg
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Mercurial Clone
       run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -Tv -o StrictHostKeyChecking=accept-new -o BatchMode=yes -i ~/.ssh/id_hg'
     - name: Setup Node
@@ -38,8 +40,6 @@ jobs:
         # Set up for multi-arch building
         docker buildx create --name container-builder --driver docker-container --use --bootstrap
         npm run -w @cs/docker build
-    - if: ${{ always() }}
-      run: ssh-agent -k
   build:
     strategy:
       matrix:
@@ -55,8 +55,10 @@ jobs:
         path: ~/.ssh/known_hosts
         key: ssh-known-hosts
     - run: |
-        echo '${{ secrets.SSH_PRIVATE_KEY }}' > ~/.ssh/id_hg
+        printenv SSH_PRIVATE_KEY > ~/.ssh/id_hg
         chmod 600 ~/.ssh/id_hg
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Install software
       if: runner.os == 'macOS'
       run:
@@ -92,5 +94,4 @@ jobs:
     - if: ${{ always() }}
       run: |
         cat /tmp/debug.log
-        ssh-agent -k
       
