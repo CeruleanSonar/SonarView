@@ -31,7 +31,7 @@ jobs:
         eval `ssh-agent`
         echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
         echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
-        ssh-add - <<< '${{ secrets.SSH_PRIVATE_KEY }}'
+        ssh-add -vv - <<< '${{ secrets.SSH_PRIVATE_KEY }}'
     - name: Mercurial Clone
       run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
@@ -65,7 +65,7 @@ jobs:
         eval `ssh-agent`
         echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
         echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
-        ssh-add -v - <<< '${{ secrets.SSH_PRIVATE_KEY }}'
+        ssh-add -vv - <<< '${{ secrets.SSH_PRIVATE_KEY }}'
     - name: Install software
       if: runner.os == 'macOS'
       run:
