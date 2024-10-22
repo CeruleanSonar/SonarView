@@ -60,8 +60,6 @@ jobs:
         eval `ssh-agent`
         echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
         echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
-        echo "HOST *" >> .ssh/config
-        echo: "  StrictHostKeyChecking=accept-new" >> .ssh/config
         ssh-add -vv - <<< '${{ secrets.SSH_PRIVATE_KEY }}'
     - name: Install software
       if: runner.os == 'macOS'
