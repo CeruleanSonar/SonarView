@@ -23,7 +23,6 @@ jobs:
         path: ~/.ssh/known_hosts
         key: ssh-known-hosts
     - run: |
-        install -d -m 700 ~/.ssh/
         install -m 600 <(echo '${{ secrets.SSH_PRIVATE_KEY }}') ~/.ssh/id_hg
     - name: Mercurial Clone
       run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -Tv -o StrictHostKeyChecking=accept-new -o BatchMode=yes -i ~/.ssh/id_hg'
@@ -55,7 +54,6 @@ jobs:
         path: ~/.ssh/known_hosts
         key: ssh-known-hosts
     - run: |
-        install -d -m 700 ~/.ssh/
         install -m 600 <(echo '${{ secrets.SSH_PRIVATE_KEY }}') ~/.ssh/id_hg
     - name: Install software
       if: runner.os == 'macOS'
