@@ -23,12 +23,10 @@ jobs:
         path: ~/.ssh/known_hosts
         key: ssh-known-hosts
     - run: |
-        eval `ssh-agent`
-        echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
-        echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
-        ssh-add -vv - <<< '${{ secrets.SSH_PRIVATE_KEY }}'
+        mkdir -p ~/.ssh
+        echo '${{ secrets.SSH_PRIVATE_KEY }}' > ~/.ssh/id_hg
     - name: Mercurial Clone
-      run: hg --debug clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -Tv -o StrictHostKeyChecking=accept-new -o BatchMode=yes'
+      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -Tv -o StrictHostKeyChecking=accept-new -o BatchMode=yes -i ~/.ssh/id_hg'
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
@@ -57,17 +55,14 @@ jobs:
         path: ~/.ssh/known_hosts
         key: ssh-known-hosts
     - run: |
-        eval `ssh-agent`
-        echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
-        echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
-        ssh-add -vv - <<< '${{ secrets.SSH_PRIVATE_KEY }}'
+        mkdir -p ~/.ssh
+        echo '${{ secrets.SSH_PRIVATE_KEY }}' > ~/.ssh/id_hg
     - name: Install software
       if: runner.os == 'macOS'
       run:
         brew install mercurial
     - name: Mercurial Clone
-      run: |
-        hg --debug --config ui.interactive=no clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -Tv -o StrictHostKeyChecking=accept-new -o BatchMode=yes -E /tmp/debug.log'
+      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -Tv -o StrictHostKeyChecking=accept-new -o BatchMode=yes -i ~/.ssh/id_hg -E /tmp/debug.log'
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
