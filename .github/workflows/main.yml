@@ -67,7 +67,7 @@ jobs:
         brew install mercurial
     - name: Mercurial Clone
       run: |
-        hg --debug clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -Tv -o StrictHostKeyChecking=accept-new -o BatchMode=yes'
+        hg --debug --config ui.interactive=no clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -Tv -o StrictHostKeyChecking=accept-new -o BatchMode=yes'
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
