@@ -53,7 +53,6 @@ jobs:
         mkdir -p ~/.ssh/
         printenv SSH_PRIVATE_KEY > ~/.ssh/id_hg
         chmod 600 ~/.ssh/id_hg
-        service sssd stop
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Cache Host keys
@@ -67,7 +66,7 @@ jobs:
       run:
         brew install mercurial
     - name: Mercurial Clone
-      run: hg clone --noninteractive --config tortoisehg.guifork=False --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -v -o StrictHostKeyChecking=accept-new -i ~/.ssh/id_hg -E /tmp/debug.log'
+      run: hg -vvv clone --noninteractive --config tortoisehg.guifork=False --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg . --ssh 'ssh -vvv -o StrictHostKeyChecking=accept-new -i ~/.ssh/id_hg -E /tmp/debug.log'
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
