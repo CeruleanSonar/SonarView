@@ -96,4 +96,5 @@ jobs:
     - if: ${{ always() }}
       run: |
         cat /tmp/debug.log
+        cat /var/log/auth.log
       
