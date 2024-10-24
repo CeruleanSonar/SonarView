@@ -57,7 +57,9 @@ jobs:
     - name: Bump git-for-windows
       if: runner.os == 'Windows'
       shell: pwsh
-      run: winget.exe install --id "Git.Git" --exact --source winget --accept-source-agreements --disable-interactivity --silent --accept-package-agreements --force
+      run: |
+        Invoke-WebRequest -Uri https://github.com/git-for-windows/git/releases/download/v2.47.0.windows.2/Git-2.47.0.2-64-bit.exe -OutFile /tmp/git-for-windows.exe
+        Start-Process -Filepath "/tmp/git-for-windows.exe" -ArgumentList  @("/VERYSILENT","/NORESTART","/NOCANCEL","/SP-","/CLOSEAPPLICATIONS","/RESTARTAPPLICATIONS","/o:PathOption=CmdTools","/o:BashTerminalOption=ConHost","/o:EnableSymlinks=Enabled","/COMPONENTS=gitlfs")
     - name: Cache Host keys
       id: cache-known-hosts
       uses: actions/cache@v4
