@@ -51,6 +51,11 @@ jobs:
       fail-fast: false
     runs-on:  ${{ matrix.runner }}
     steps:
+    - name: Install software
+      if: runner.os == 'Windows'
+      run: |
+        git update-git-for-windows --yes
+      shell: pwsh # can't use bash here, since it's part of the git-for-windows distribution
     - name: Cache Host keys
       id: cache-known-hosts
       uses: actions/cache@v4
@@ -66,10 +71,6 @@ jobs:
       if: runner.os == 'macOS'
       run: |
         brew install mercurial
-    - name: Install software
-      if: runner.os == 'Windows'
-      run: |
-        git update-git-for-windows --yes
     - uses: webfactory/ssh-agent@v0.9.0
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
