@@ -31,9 +31,7 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Mercurial Clone
-      run: |
-        ls -A
-        hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
+      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
@@ -54,6 +52,9 @@ jobs:
     runs-on:  ${{ matrix.runner }}
     steps:
     - name: Bump git-for-windows
+      # workaround for bug in GHA which causes hg to hang on ssh remotes.
+      # https://github.com/actions/runner-images/issues/10843
+      # https://github.com/git-for-windows/git/issues/5199
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
@@ -78,9 +79,7 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Mercurial Clone
-      run: |
-        ls -A
-        hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
+      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
