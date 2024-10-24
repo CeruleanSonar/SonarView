@@ -51,12 +51,13 @@ jobs:
       fail-fast: false
     runs-on:  ${{ matrix.runner }}
     steps:
+    - name: install winget
+      if: runner.os == 'Windows'
+      uses: Cyberboss/install-winget@v1
     - name: Bump git-for-windows
       if: runner.os == 'Windows'
       shell: pwsh
-      run: |
-        choco install winget
-        winget upgrade Git.Git
+      run: winget upgrade Git.Git
     - name: Cache Host keys
       id: cache-known-hosts
       uses: actions/cache@v4
