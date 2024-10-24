@@ -57,7 +57,7 @@ jobs:
     - name: Bump git-for-windows
       if: runner.os == 'Windows'
       shell: pwsh
-      run: winget upgrade Git.Git
+      run: winget upgrade Git.Git --accept-package-agreements --accept-source-agreements
     - name: Cache Host keys
       id: cache-known-hosts
       uses: actions/cache@v4
