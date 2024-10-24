@@ -64,8 +64,13 @@ jobs:
         ssh-keyscan codebasehq.com >> ~/.ssh/known_hosts
     - name: Install software
       if: runner.os == 'macOS'
-      run:
+      run: |
         brew install mercurial
+    - name: Install software
+      if: runner.os == 'Windows'
+      run: |
+        winget list
+        winget upgrade Git.Git
     - uses: webfactory/ssh-agent@v0.9.0
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
