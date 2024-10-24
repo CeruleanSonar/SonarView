@@ -55,7 +55,7 @@ jobs:
       if: runner.os == 'Windows'
       run: |
         git update-git-for-windows --yes
-      shell: pwsh # can't use bash here, since it's part of the git-for-windows distribution
+      shell: cmd # can't use bash here, since it's part of the git-for-windows distribution
     - name: Cache Host keys
       id: cache-known-hosts
       uses: actions/cache@v4
