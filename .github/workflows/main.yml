@@ -53,9 +53,6 @@ jobs:
       fail-fast: false
     runs-on:  ${{ matrix.runner }}
     steps:
-    - name: install winget
-      if: runner.os == 'Windows'
-      uses: Cyberboss/install-winget@v1
     - name: Bump git-for-windows
       if: runner.os == 'Windows'
       shell: pwsh
