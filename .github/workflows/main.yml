@@ -54,7 +54,9 @@ jobs:
     - name: Bump git-for-windows
       if: runner.os == 'Windows'
       shell: pwsh
-      run: choco install git.install
+      run: |
+        choco install winget
+        winget upgrade Git.Git
     - name: Cache Host keys
       id: cache-known-hosts
       uses: actions/cache@v4
