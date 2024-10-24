@@ -69,7 +69,7 @@ jobs:
     - name: Install software
       if: runner.os == 'Windows'
       run: |
-        git update-git-for-windows
+        git update-git-for-windows --yes
     - uses: webfactory/ssh-agent@v0.9.0
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
