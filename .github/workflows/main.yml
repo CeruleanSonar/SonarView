@@ -106,5 +106,5 @@ jobs:
       env:
         # for creating github release
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        DEBUG: electron-notarize:notarytool
-        CSC_FOR_PULL_REQUEST: true
+        DEBUG: 'electron-*'
+        CSC_FOR_PULL_REQUEST: 'true'
