@@ -101,10 +101,11 @@ jobs:
         echo APPLE_API_KEY_ID=${{ secrets.APPLE_API_KEY_ID }} >> $GITHUB_ENV
         echo APPLE_API_ISSUER=${{ secrets.APPLE_API_ISSUER }} >> $GITHUB_ENV
     - name: Build
+      # mac notarization can time out at the server-side
+      continue-on-error: ${{ runner.os == 'macOS' }}
+      timeout-minutes: 15
       run: |
         npx quasar build -m electron -P always
       env:
         # for creating github release
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        DEBUG: 'electron-*'
-        CSC_FOR_PULL_REQUEST: 'true'
