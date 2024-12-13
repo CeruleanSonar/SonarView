@@ -100,18 +100,7 @@ jobs:
       env:
         # for creating github release
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Windows code signing
-      if: runner.os == 'Windows'
-      uses: azure/trusted-signing-action@v0.5.0
-      with:
-          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          endpoint: https://eus.codesigning.azure.net/
-          trusted-signing-account-name: TrustedSigningAccount1
-          certificate-profile-name: CertificateProfile1
-          files-folder: ${{ github.workspace }}/dist/electron/packaged
-          files-folder-filter: exe,dll
-          file-digest: SHA256
-          timestamp-rfc3161: http://timestamp.acs.microsoft.com
-          timestamp-digest: SHA256
+        # Trusted Signing (for Windows)
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
