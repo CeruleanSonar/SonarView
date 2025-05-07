@@ -50,6 +50,7 @@ jobs:
         runner: [macos-latest, windows-latest, ubuntu-latest]
       fail-fast: false
     runs-on:  ${{ matrix.runner }}
+    continue-on-error: ${{ matrix.runner == 'macos-latest' }}
     steps:
     - name: Cache Host keys
       id: cache-known-hosts
@@ -93,7 +94,6 @@ jobs:
         echo APPLE_API_ISSUER=${{ secrets.APPLE_API_ISSUER }} >> $GITHUB_ENV
     - name: Build
       # mac notarization can time out at the server-side
-      continue-on-error: ${{ runner.os == 'macOS' }}
       timeout-minutes: 15
       run: |
         npx quasar build -m electron -P always
