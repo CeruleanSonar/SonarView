@@ -16,12 +16,6 @@ jobs:
   build-docker:
     runs-on: ubuntu-latest
     steps:
-    - name: Cache Host keys
-      id: cache-known-hosts
-      uses: actions/cache@v4
-      with:
-        path: ~/.ssh/known_hosts
-        key: ssh-known-hosts
     - name: setup ssh
       run: |
         mkdir -p ~/.ssh
