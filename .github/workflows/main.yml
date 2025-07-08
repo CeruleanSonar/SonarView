@@ -26,7 +26,7 @@ jobs:
       run: |
         mkdir -p ~/.ssh
         echo -e "Host *\n  StrictHostKeyChecking accept-new\n" > ~/.ssh/config
-        chmod -R 600 ~/.ssh/id_rsa
+        chmod -R 600 ~/.ssh
     - uses: webfactory/ssh-agent@v0.9.0
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
