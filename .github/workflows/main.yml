@@ -19,10 +19,9 @@ jobs:
     - name: setup ssh
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ci
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         echo -e "Host *\n  StrictHostKeyChecking accept-new\n" >> ~/.ssh/config
         chmod -R 700 ~/.ssh
-        ssh-add ~/.ssh/id_ci
     - name: Mercurial Clone
       run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
@@ -48,10 +47,9 @@ jobs:
     - name: setup ssh
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ci
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         echo -e "Host *\n  StrictHostKeyChecking accept-new\n" >> ~/.ssh/config
         chmod -R 700 ~/.ssh
-        ssh-add ~/.ssh/id_ci
     - name: Install software
       if: runner.os == 'macOS'
       run: |
