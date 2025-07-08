@@ -22,8 +22,9 @@ jobs:
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         echo -e "Host *\n  StrictHostKeyChecking accept-new\n" >> ~/.ssh/config
         chmod -R 700 ~/.ssh
+        ssh -T hg@codebasehq.com
     - name: Mercurial Clone
-      run: hg clone --noninteractive --verbose --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
+      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
@@ -50,12 +51,13 @@ jobs:
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         echo -e "Host *\n  StrictHostKeyChecking accept-new\n" >> ~/.ssh/config
         chmod -R 700 ~/.ssh
+        ssh -T hg@codebasehq.com
     - name: Install software
       if: runner.os == 'macOS'
       run: |
         brew install mercurial
     - name: Mercurial Clone
-      run: hg clone --noninteractive --verbose --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
+      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
