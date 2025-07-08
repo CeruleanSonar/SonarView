@@ -22,11 +22,11 @@ jobs:
       with:
         path: ~/.ssh/known_hosts
         key: ssh-known-hosts
-    - name: Initialize host keys
-      if: (! steps.cache-known-hosts.outputs.cache-hit)
+    - name: setup ssh
       run: |
         mkdir -p ~/.ssh
-        ssh-keyscan -v codebasehq.com  >> ~/.ssh/known_hosts
+        echo -e "Host *\n  StrictHostKeyChecking accept-new\n" > ~/.ssh/config
+        chmod -R 600 ~/.ssh/id_rsa
     - uses: webfactory/ssh-agent@v0.9.0
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
