@@ -55,7 +55,7 @@ jobs:
       run: |
         brew install mercurial
     - name: Mercurial Clone
-      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
+      run: hg clone --verbose --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
