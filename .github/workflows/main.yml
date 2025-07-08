@@ -21,7 +21,7 @@ jobs:
         mkdir -p ~/.ssh
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ci
         echo -e "Host *\n  StrictHostKeyChecking accept-new\n" >> ~/.ssh/config
-        chmod -R 600 ~/.ssh
+        chmod -R 700 ~/.ssh
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Mercurial Clone
