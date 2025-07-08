@@ -25,11 +25,11 @@ jobs:
     - name: setup ssh
       run: |
         mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ci
         echo -e "Host *\n  StrictHostKeyChecking accept-new\n" > ~/.ssh/config
         chmod -R 600 ~/.ssh
-    - uses: webfactory/ssh-agent@v0.9.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Mercurial Clone
       run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
@@ -58,18 +58,18 @@ jobs:
       with:
         path: ~/.ssh/known_hosts
         key: ssh-known-hosts
-    - name: Initialize host keys
-      if: (! steps.cache-known-hosts.outputs.cache-hit)
+    - name: setup ssh
       run: |
         mkdir -p ~/.ssh
-        ssh-keyscan codebasehq.com >> ~/.ssh/known_hosts
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ci
+        echo -e "Host *\n  StrictHostKeyChecking accept-new\n" > ~/.ssh/config
+        chmod -R 600 ~/.ssh
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Install software
       if: runner.os == 'macOS'
       run: |
         brew install mercurial
-    - uses: webfactory/ssh-agent@v0.9.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Mercurial Clone
       run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
