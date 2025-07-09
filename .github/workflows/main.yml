@@ -40,7 +40,7 @@ jobs:
     strategy:
       matrix:
         # note that we can't build for macOS from Linux
-        runner: [macos-latest, windows-latest, ubuntu-latest]
+        runner: [macos-latest, windows-2025, ubuntu-latest]
       fail-fast: false
     runs-on:  ${{ matrix.runner }}
     continue-on-error: ${{ matrix.runner == 'macos-latest' }}
@@ -56,6 +56,11 @@ jobs:
       if: runner.os == 'macOS'
       run: |
         brew install mercurial
+    - name: Install software
+      if: runner.os == 'Windows'
+      run: |
+        winget install --id=Mercurial.Mercurial --exact --disable-interactivity --accept-source-agreements --accept-package-agreements
+        echo "C:/Program Files/Mercurial" >> "$GITHUB_PATH"
     - name: Mercurial Clone
       run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
