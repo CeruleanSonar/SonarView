@@ -16,20 +16,13 @@ jobs:
   build-docker:
     runs-on: ubuntu-latest
     steps:
-    - name: Cache Host keys
-      id: cache-known-hosts
-      uses: actions/cache@v4
-      with:
-        path: ~/.ssh/known_hosts
-        key: ssh-known-hosts
-    - name: Initialize host keys
-      if: (! steps.cache-known-hosts.outputs.cache-hit)
+    - name: setup ssh
       run: |
         mkdir -p ~/.ssh
-        ssh-keyscan codebasehq.com >> ~/.ssh/known_hosts
-    - uses: webfactory/ssh-agent@v0.9.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        echo -e "Host *\n  StrictHostKeyChecking accept-new\n" >> ~/.ssh/config
+        chmod -R 700 ~/.ssh
+        ssh -T hg@codebasehq.com || true
     - name: Mercurial Clone
       run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
@@ -52,24 +45,17 @@ jobs:
     runs-on:  ${{ matrix.runner }}
     continue-on-error: ${{ matrix.runner == 'macos-latest' }}
     steps:
-    - name: Cache Host keys
-      id: cache-known-hosts
-      uses: actions/cache@v4
-      with:
-        path: ~/.ssh/known_hosts
-        key: ssh-known-hosts
-    - name: Initialize host keys
-      if: (! steps.cache-known-hosts.outputs.cache-hit)
+    - name: setup ssh
       run: |
         mkdir -p ~/.ssh
-        ssh-keyscan codebasehq.com >> ~/.ssh/known_hosts
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        echo -e "Host *\n  StrictHostKeyChecking accept-new\n" >> ~/.ssh/config
+        chmod -R 700 ~/.ssh
+        ssh -T hg@codebasehq.com || true
     - name: Install software
       if: runner.os == 'macOS'
       run: |
         brew install mercurial
-    - uses: webfactory/ssh-agent@v0.9.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     - name: Mercurial Clone
       run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
