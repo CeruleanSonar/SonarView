@@ -47,7 +47,13 @@ jobs:
     strategy:
       matrix:
         # note that we can't build for macOS from Linux
-        runner: [macos-latest, windows-latest, ubuntu-latest]
+        include:
+          - runner: ubuntu-latest
+            build_target: linux
+          - runner: ubuntu-latest
+            build_target: win
+          - runner: macos-latest
+            build_target: mac
       fail-fast: false
     runs-on:  ${{ matrix.runner }}
     continue-on-error: ${{ matrix.runner == 'macos-latest' }}
