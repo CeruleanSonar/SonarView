@@ -59,7 +59,7 @@ jobs:
     - name: Install software
       if: runner.os == 'Windows'
       run: |
-        winget install Mercurial.Mercurial --exact
+        winget install --id=Mercurial.Mercurial --exact --disable-interactivity --accept-source-agreements
     - name: Mercurial Clone
       run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
