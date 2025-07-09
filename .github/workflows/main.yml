@@ -59,7 +59,8 @@ jobs:
     - name: Install software
       if: runner.os == 'Windows'
       run: |
-        winget install --id=Mercurial.Mercurial --exact --disable-interactivity --accept-source-agreements
+        winget install --id=Mercurial.Mercurial --exact --disable-interactivity --accept-source-agreements --accept-package-agreements
+        echo "C:/Program Files/Mercurial" >> "$GITHUB_PATH"
     - name: Mercurial Clone
       run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
