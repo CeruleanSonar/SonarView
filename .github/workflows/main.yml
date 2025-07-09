@@ -56,6 +56,10 @@ jobs:
       if: runner.os == 'macOS'
       run: |
         brew install mercurial
+    - name: Install software
+      if: runner.os == 'Windows'
+      run: |
+        winget install Mercurial.Mercurial --exact
     - name: Mercurial Clone
       run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
