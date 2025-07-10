@@ -22,7 +22,7 @@ jobs:
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         echo -e "Host *\n  StrictHostKeyChecking accept-new\n" >> ~/.ssh/config
         chmod -R 700 ~/.ssh
-        ssh -T hg@codebasehq.com || true
+        ssh -T hg@codebasehq.com || [ $? -eq 1 ] || exit $?
     - name: Mercurial Clone
       run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
