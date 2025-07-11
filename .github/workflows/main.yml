@@ -51,7 +51,7 @@ jobs:
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         echo -e "Host *\n  StrictHostKeyChecking accept-new\n" >> ~/.ssh/config
         chmod -R 700 ~/.ssh
-        ssh -T hg@codebasehq.com || true
+        ssh -T hg@codebasehq.com || [ $? -eq 1 ] || exit $?
     - name: Install software
       if: runner.os == 'macOS'
       run: |
