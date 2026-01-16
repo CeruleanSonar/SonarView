@@ -2,9 +2,13 @@ name: Build Docker Image
 on:
   workflow_dispatch:
     inputs:
-      updaterev:
+      sonarview_updaterev:
         type: string
-        description: which revision to pull
+        description: which SonarView revision to pull
+        default: default
+      os3d_updaterev:
+        type: string
+        description: which OS3D revision to pull
         default: default
   push:
   pull_request:
@@ -17,6 +21,7 @@ jobs:
   build-docker-tarball:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - variant: standard
@@ -36,11 +41,11 @@ jobs:
           ssh -T hg@codebasehq.com || [ $? -eq 1 ] || exit $?
 
       - name: Mercurial Clone SonarView
-        run: hg clone --updaterev "${{ inputs.updaterev || '1cb949f661507175e06f128c7225fcff017c9c81' }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg SonarView
+        run: hg clone --updaterev "${{ inputs.sonarview_updaterev || 'default' }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg SonarView
 
       - name: Mercurial Clone OS3D
         if: matrix.enable_os3d
-        run: hg clone ssh://hg@codebasehq.com/digi-labs/cerulean/os3d.hg os3d
+        run: hg clone --updaterev "${{ inputs.os3d_updaterev || 'default' }}" ssh://hg@codebasehq.com/digi-labs/cerulean/os3d.hg os3d
 
       - name: Setup Node
         uses: actions/setup-node@v4
