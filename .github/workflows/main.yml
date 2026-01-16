@@ -13,29 +13,6 @@ defaults:
   run:
     shell: bash
 jobs:
-  build-docker:
-    runs-on: ubuntu-latest
-    steps:
-    - name: setup ssh
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        echo -e "Host *\n  StrictHostKeyChecking accept-new\n" >> ~/.ssh/config
-        chmod -R 700 ~/.ssh
-        ssh -T hg@codebasehq.com || [ $? -eq 1 ] || exit $?
-    - name: Mercurial Clone
-      run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
-    - name: Setup Node
-      uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-        cache: npm
-    - name: Build
-      run: |
-        npm ci --foreground-scripts
-        # Set up for multi-arch building
-        docker buildx create --name container-builder --driver docker-container --use --bootstrap
-        npm run -w @cs/docker build
   build:
     strategy:
       matrix:
