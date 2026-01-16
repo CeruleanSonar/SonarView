@@ -5,7 +5,7 @@ on:
       updaterev:
         type: string
         description: which revision to pull
-        default: default
+        default: 1cb949f661507175e06f128c7225fcff017c9c81
   push:
   pull_request:
 
