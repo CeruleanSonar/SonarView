@@ -1,0 +1,92 @@
+name: Build Docker Image
+on:
+  workflow_dispatch:
+    inputs:
+      updaterev:
+        type: string
+        description: which revision to pull
+        default: default
+  push:
+  pull_request:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build-docker-tarball:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - variant: standard
+            enable_os3d: false
+            artifact_name: docker-image
+          - variant: os3d
+            enable_os3d: true
+            artifact_name: docker-image-os3d
+    name: Build Docker (${{ matrix.variant }})
+    steps:
+      - name: setup ssh
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo -e "Host *\n  StrictHostKeyChecking accept-new\n" >> ~/.ssh/config
+          chmod -R 700 ~/.ssh
+          ssh -T hg@codebasehq.com || [ $? -eq 1 ] || exit $?
+
+      - name: Mercurial Clone SonarView
+        run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg SonarView
+
+      - name: Mercurial Clone OS3D
+        if: matrix.enable_os3d
+        run: hg clone ssh://hg@codebasehq.com/digi-labs/cerulean/os3d.hg os3d
+
+      # Compose file expects SonarView and os3d directories next to each other, no sed needed
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --foreground-scripts
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+          driver-opts: image=moby/buildkit:latest
+
+      - name: Stage npm packages
+        working-directory: src-docker
+        run: node stage-packages.mjs
+
+      - name: Build Docker image (standard)
+        if: ${{ !matrix.enable_os3d }}
+        working-directory: src-docker
+        run: |
+          docker buildx bake -f compose.yaml \
+            --set *.output=type=oci,dest=dist/sonarview-docker.tar.gz
+
+      - name: Build Docker image (os3d)
+        if: matrix.enable_os3d
+        working-directory: src-docker
+        run: |
+          docker buildx bake -f compose.yaml -f compose-os3d.yaml \
+            --set *.output=type=oci,dest=dist/sonarview-docker.tar.gz
+
+      - name: Rename tarball with variant suffix
+        if: matrix.enable_os3d
+        run: |
+          cd src-docker/dist
+          mv sonarview-docker.tar.gz sonarview-docker-os3d.tar.gz
+
+      - name: Upload Docker image tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: src-docker/dist/sonarview-docker*.tar.gz
+          if-no-files-found: error
+          retention-days: 30
