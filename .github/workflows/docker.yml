@@ -1,5 +1,7 @@
 name: Build Docker Image
 on:
+  schedule:
+    - cron: "0 6 * * *" # daily at 6 am
   workflow_dispatch:
     inputs:
       sonarview_updaterev:
@@ -11,7 +13,6 @@ on:
         description: which OS3D revision to pull
         default: default
   push:
-  pull_request:
 
 defaults:
   run:
