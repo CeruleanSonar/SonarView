@@ -5,7 +5,7 @@ on:
       updaterev:
         type: string
         description: which revision to pull
-        default: 1cb949f661507175e06f128c7225fcff017c9c81
+        default: default
   push:
   pull_request:
 
@@ -36,7 +36,7 @@ jobs:
           ssh -T hg@codebasehq.com || [ $? -eq 1 ] || exit $?
 
       - name: Mercurial Clone SonarView
-        run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg SonarView
+        run: hg clone --updaterev "${{ inputs.updaterev || '1cb949f661507175e06f128c7225fcff017c9c81' }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg SonarView
 
       - name: Mercurial Clone OS3D
         if: matrix.enable_os3d
