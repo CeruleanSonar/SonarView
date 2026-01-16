@@ -32,8 +32,6 @@ jobs:
             enable_os3d: true
             artifact_name: docker-image-os3d
     name: Build Docker (${{ matrix.variant }})
-    env:
-      BUILDX_BAKE_ENTITLEMENTS_FS: "0"
     steps:
       - name: setup ssh
         run: |
@@ -66,6 +64,7 @@ jobs:
         with:
           driver: docker-container
           driver-opts: image=moby/buildkit:latest
+          buildkitd-flags: --allow fs.read=*
 
       - name: Stage npm packages
         working-directory: SonarView/src-docker
