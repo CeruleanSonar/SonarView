@@ -32,8 +32,6 @@ jobs:
             enable_os3d: true
             artifact_name: docker-image-os3d
     name: Build Docker (${{ matrix.variant }})
-    env:
-      BUILDX_BAKE_ENTITLEMENTS_FS: "0"
     steps:
       - name: setup ssh
         run: |
@@ -73,16 +71,17 @@ jobs:
 
       - name: Build Docker image (standard)
         if: ${{ !matrix.enable_os3d }}
-        working-directory: SonarView/src-docker
         run: |
-          docker buildx bake -f compose.yaml \
+          docker buildx bake \
+            -f SonarView/src-docker/compose.yaml \
             --set *.output=type=oci,dest=dist/sonarview-docker.tar.gz
 
       - name: Build Docker image (os3d)
         if: matrix.enable_os3d
-        working-directory: SonarView/src-docker
         run: |
-          docker buildx bake -f compose.yaml -f compose-os3d.yaml \
+          docker buildx bake \ 
+            -f SonarView/src-docker/compose.yaml \
+            -f SonarView/src-docker/compose-os3d.yaml \
             --set *.output=type=oci,dest=dist/sonarview-docker.tar.gz
 
       - name: Rename tarball with variant suffix
