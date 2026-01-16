@@ -59,6 +59,10 @@ jobs:
         working-directory: SonarView
         run: npm ci --foreground-scripts
 
+      - name: Build SonarView webapp
+        working-directory: SonarView
+        run: npm run build:spa
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
