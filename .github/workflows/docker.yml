@@ -64,7 +64,6 @@ jobs:
         with:
           driver: docker-container
           driver-opts: image=moby/buildkit:latest
-          buildkitd-flags: '--allow fs.read=*'
 
       - name: Stage npm packages
         working-directory: SonarView/src-docker
