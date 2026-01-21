@@ -84,7 +84,7 @@ jobs:
         if: matrix.enable_os3d
         working-directory: SonarView/src-docker
         run: |
-          docker -f compose.yaml -f compose-os3d.yaml build
+          docker compose -f compose.yaml -f compose-os3d.yaml build
           docker save localhost/sonarview -o dist/sonarview-docker-os3d.tar.gz
 
       - name: Upload Docker image tarball
