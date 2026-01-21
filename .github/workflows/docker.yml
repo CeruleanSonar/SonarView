@@ -78,15 +78,14 @@ jobs:
         working-directory: SonarView/src-docker
         run: |
           docker compose -f compose.yaml build
-          docker save localhost/sonarview -o sonarview-docker.tar.gz
+          docker save localhost/sonarview -o dist/sonarview-docker.tar.gz
 
       - name: Build Docker image (os3d)
         if: matrix.enable_os3d
         working-directory: SonarView/src-docker
         run: |
           docker -f compose.yaml -f compose-os3d.yaml build
-          docker save localhost/sonarview -o sonarview-docker-os3d.tar.gz
-          
+          docker save localhost/sonarview -o dist/sonarview-docker-os3d.tar.gz
 
       - name: Upload Docker image tarball
         uses: actions/upload-artifact@v4
