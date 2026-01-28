@@ -77,25 +77,15 @@ jobs:
         if: ${{ !matrix.enable_os3d }}
         working-directory: SonarView/src-docker
         run: |
-          docker buildx bake \
-            --allow 'fs.read=*' \
-            -f compose.yaml \
-            --set *.output=type=oci,dest=dist/sonarview-docker.tar.gz
+          docker compose -f compose.yaml build
+          docker save localhost/sonarview -o dist/sonarview-docker.tar.gz
 
       - name: Build Docker image (os3d)
         if: matrix.enable_os3d
         working-directory: SonarView/src-docker
         run: |
-          docker buildx bake \
-            --allow 'fs.read=*' \
-            -f compose.yaml -f compose-os3d.yaml \
-            --set *.output=type=oci,dest=dist/sonarview-docker.tar.gz
-
-      - name: Rename tarball with variant suffix
-        if: matrix.enable_os3d
-        run: |
-          cd SonarView/src-docker/dist
-          mv sonarview-docker.tar.gz sonarview-docker-os3d.tar.gz
+          docker compose -f compose.yaml -f compose-os3d.yaml build
+          docker save localhost/sonarview -o dist/sonarview-docker-os3d.tar.gz
 
       - name: Upload Docker image tarball
         uses: actions/upload-artifact@v4
