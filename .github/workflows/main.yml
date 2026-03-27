@@ -34,10 +34,9 @@ jobs:
         brew install mercurial
     - name: Install software
       if: runner.os == 'Windows'
-      shell: pwsh
       run: |
         choco install mercurial --no-progress -y
-        echo "C:\Program Files\Mercurial" >> $env:GITHUB_PATH
+        echo "C:/Program Files/Mercurial" >> "$GITHUB_PATH"
     - name: Mercurial Clone
       run: hg clone --updaterev "${{ inputs.updaterev }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg .
     - name: Setup Node
