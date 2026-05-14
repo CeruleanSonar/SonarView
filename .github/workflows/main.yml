@@ -7,7 +7,7 @@ on:
       updaterev:
         type: string
         description: which revision to pull
-        default: default
+        default: "@"
 defaults:
   run:
     shell: bash

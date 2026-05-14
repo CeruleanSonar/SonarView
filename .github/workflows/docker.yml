@@ -7,11 +7,11 @@ on:
       sonarview_updaterev:
         type: string
         description: which SonarView revision to pull
-        default: default
+        default: "@"
       os3d_updaterev:
         type: string
         description: which OS3D revision to pull
-        default: default
+        default: "@"
   push:
 
 defaults:
@@ -42,11 +42,11 @@ jobs:
           ssh -T hg@codebasehq.com || [ $? -eq 1 ] || exit $?
 
       - name: Mercurial Clone SonarView
-        run: hg clone --updaterev "${{ inputs.sonarview_updaterev || 'default' }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg SonarView
+        run: hg clone --updaterev "${{ inputs.sonarview_updaterev || '@' }}" ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg SonarView
 
       - name: Mercurial Clone OS3D
         if: matrix.enable_os3d
-        run: hg clone --updaterev "${{ inputs.os3d_updaterev || 'default' }}" ssh://hg@codebasehq.com/digi-labs/cerulean/os3d.hg os3d
+        run: hg clone --updaterev "${{ inputs.os3d_updaterev || '@' }}" ssh://hg@codebasehq.com/digi-labs/cerulean/os3d.hg os3d
 
       - name: Setup Node
         uses: actions/setup-node@v6
