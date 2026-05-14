@@ -11,7 +11,7 @@ on:
       os3d_updaterev:
         type: string
         description: which OS3D revision to pull
-        default: "@"
+        default: default
   push:
 
 defaults:
@@ -46,7 +46,7 @@ jobs:
 
       - name: Mercurial Clone OS3D
         if: matrix.enable_os3d
-        run: hg clone --updaterev "${{ inputs.os3d_updaterev || '@' }}" ssh://hg@codebasehq.com/digi-labs/cerulean/os3d.hg os3d
+        run: hg clone --updaterev "${{ inputs.os3d_updaterev || 'default' }}" ssh://hg@codebasehq.com/digi-labs/cerulean/os3dpi.hg os3d
 
       - name: Setup Node
         uses: actions/setup-node@v6
