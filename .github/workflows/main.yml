@@ -44,7 +44,6 @@ jobs:
       with:
         node-version: 26.5.0
         cache: npm
-        cache-dependency-path: SonarView/package-lock.json
     - name: Prebuild
       run: |
         npm ci --foreground-scripts
