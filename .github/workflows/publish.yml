@@ -1,0 +1,72 @@
+name: Publish release
+# When a release is published, copies the docker image it refers to (sonarview-docker-image.txt,
+# attached by the draft job in main.yml: <repository>:run-<run>.<attempt>, a tag unique to the run
+# that built it) to Docker Hub, tagged with the release's version, from its tag v<version>, and
+# latest. The version must match the one the image was built as.
+on:
+  release:
+    types: [published]
+defaults:
+  run:
+    shell: bash
+env:
+  TARGET_DOCKER_REPOSITORY: docker.io/nicknothom/sonarview
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # to pull the image from ghcr.io
+      packages: read
+    steps:
+    - name: Find docker image
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        RELEASE_ID: ${{ github.event.release.id }}
+        TAG: ${{ github.event.release.tag_name }}
+      run: |
+        # The canonical version is the tag's: v<version>, from the root package.json
+        if [[ $TAG != v* ]]; then
+          echo "::error::Release tag $TAG isn't v<version>"
+          exit 1
+        fi
+        VERSION=${TAG#v}
+        # The published release's own copy, found by its ID rather than its tag
+        asset=$(gh api "repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" \
+          --jq '.assets[] | select(.name == "sonarview-docker-image.txt") | .id')
+        if [ -z "$asset" ]; then
+          echo "::error::Release $VERSION has no sonarview-docker-image.txt"
+          exit 1
+        fi
+        gh api -H "Accept: application/octet-stream" "repos/$GITHUB_REPOSITORY/releases/assets/$asset" \
+          > sonarview-docker-image.txt
+        if ! [[ $VERSION =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
+          echo "::error::Version '$VERSION' (from tag $TAG) can't be a docker tag"
+          exit 1
+        fi
+        echo "SOURCE=$(cat sonarview-docker-image.txt)" >> "$GITHUB_ENV"
+        echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+    - name: Log in to ghcr.io
+      uses: docker/login-action@v4
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v4
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Check the image's version
+      run: |
+        # Its `version` label: the root package.json version it was built from
+        built=$(docker buildx imagetools inspect "$SOURCE" --format '{{json .Image}}' \
+          | jq -r 'if has("config") then . else first(.[]) end | .config.Labels.version')
+        if [ "$built" != "$VERSION" ]; then
+          echo "::error::Release $VERSION refers to an image built as version $built"
+          exit 1
+        fi
+    - name: Copy to Docker Hub
+      run: |
+        docker buildx imagetools create --tag "$TARGET_DOCKER_REPOSITORY:$VERSION" --tag "$TARGET_DOCKER_REPOSITORY:latest" "$SOURCE"
+        echo "Copied \`$SOURCE\` to \`$TARGET_DOCKER_REPOSITORY:$VERSION\` and \`:latest\`" >> "$GITHUB_STEP_SUMMARY"
