@@ -10,13 +10,7 @@ on:
         default: "@"
       release:
         type: boolean
-        description: >-
-          Build a release: attach the builds to the draft GitHub release for this version (tag
-          v<version>, from the root package.json), creating the draft if there isn't one. The
-          desktop installers and update files go on it, and the docker image's reference
-          (sonarview-docker-image.txt), which publish.yml copies to Docker Hub when the release is
-          published. Otherwise the builds are ephemeral: workflow artifacts, and a docker image on
-          ghcr.io.
+        description: Create a draft release?
         default: false
 defaults:
   run:
@@ -192,11 +186,8 @@ jobs:
         find . -maxdepth 1 -type f -exec gh release upload "$TAG" --clobber {} +
         find . -maxdepth 1 -type f >> "$GITHUB_STEP_SUMMARY"
 
-  # Builds the docker image for every platform (src-docker/publish.mjs) and pushes it to
-  # ghcr.io/<owner>/sonarview, as <version>, hg-<changeset>, and run-<run>.<attempt>, which names
-  # exactly this run's image. Uploads that reference, <repository>:run-<run>.<attempt>, as
-  # sonarview-docker-image.txt in the workflow artifact docker-image, and for a release, attaches
-  # it to the draft release.
+  # Builds the docker image for every platform (src-docker/compose.yaml) and pushes it to
+  # ghcr.io/ceruleansonar/sonarview, run-<run>.<attempt>, which names exactly this run's image. Attaches sonarview-docker-image.txt to the draft release so that it can be transferred to dockerhub on publish.
   docker:
     needs: checkout
     runs-on: ubuntu-26.04
@@ -217,20 +208,6 @@ jobs:
         fail-on-cache-miss: true
     - name: Mercurial Checkout
       run: hg update --clean -r "${{ needs.checkout.outputs.rev }}"
-    - name: Setup Node
-      uses: actions/setup-node@v6
-      with:
-        node-version: 26.5.0
-    # Whether this Docker uses the containerd image store, with which its own builder builds every
-    # platform, and BUILDX_BUILDER and setup-buildx-action below could go:
-    # "[[driver-type io.containerd.snapshotter.v1]]"
-    - name: Docker image store
-      run: |
-        docker version --format 'Docker {{.Server.Version}}'
-        docker info --format 'Storage driver: {{.Driver}} {{.DriverStatus}}' | tee -a "$GITHUB_STEP_SUMMARY"
-    - name: Set up Docker Buildx
-      id: buildx
-      uses: docker/setup-buildx-action@v4
     # To push the image, and to pull the os3d image that compose.yaml pins
     - name: Log in to ghcr.io
       uses: docker/login-action@v4
@@ -240,13 +217,18 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build and push
       env:
-        # docker compose ignores the builder setup-buildx-action selects, so name it
-        BUILDX_BUILDER: ${{ steps.buildx.outputs.name }}
+        npm_package_version: ${{ needs.checkout.outputs.version }}
       run: |
-        repository="ghcr.io/ceruleansonar/sonarview"
-        run_tag="run-${{ github.run_id }}.${{ github.run_attempt }}"
-        src-docker/publish.mjs "$repository" --tag "hg-$(hg identify --id)" --tag "$run_tag"
-        ref="$repository:$run_tag"
+        ref="ghcr.io/ceruleansonar/sonarview:run-${{ github.run_id }}.${{ github.run_attempt }}"
+        docker compose -f src-docker/compose.yaml -f - build --push <<EOF
+        services:
+           server:
+              image: $ref
+              build:
+                 platforms: [linux/amd64, linux/arm64, linux/arm/v7]
+                 labels:
+                    org.opencontainers.image.revision: ${{ needs.checkout.outputs.rev }}
+        EOF
         mkdir -p "$RUNNER_TEMP/docker-image"
         echo "$ref" > "$RUNNER_TEMP/docker-image/sonarview-docker-image.txt"
         echo "Pushed \`$ref\`" >> "$GITHUB_STEP_SUMMARY"
