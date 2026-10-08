@@ -29,15 +29,6 @@ jobs:
       version: ${{ steps.checkout.outputs.version }}
       tag: ${{ steps.checkout.outputs.tag }}
     steps:
-      - name: setup ssh
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          echo -e "Host *\n  StrictHostKeyChecking accept-new\n" >> ~/.ssh/config
-          chmod -R 700 ~/.ssh
-          ssh -T hg@codebasehq.com || [ $? -eq 1 ] || exit $?
       # Ubuntu 26.04's runner image has no Mercurial
       - name: Install software
         run: sudo apt-get update && sudo apt-get install -y mercurial
@@ -51,14 +42,22 @@ jobs:
           enableCrossOsArchive: true
       - name: Mercurial Pull
         id: checkout
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          UPDATEREV: ${{ inputs.updaterev || '@' }}
         run: |
+          mkdir -p -m 700 ~/.ssh
+          install -m 600 <(echo "$SSH_PRIVATE_KEY") ~/.ssh/id_rsa
+          # codebasehq's host key, so that a different one is refused
+          echo "codebasehq.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIZoKai03b98KTKgySr5fLoWKpM0uuexaWZOOPNp85P/" \
+            >> ~/.ssh/known_hosts
           source=ssh://hg@codebasehq.com/digi-labs/cerulean/sonarview.hg
           if [ -d .hg ]; then
             hg pull "$source"
           else
             hg clone --noupdate "$source" .
           fi
-          rev=$(hg log -r "${{ inputs.updaterev || '@' }}" --template '{node}')
+          rev=$(hg log -r "$UPDATEREV" --template '{node}')
           version=$(hg cat -r "$rev" package.json | jq -r .version)
           echo "rev=$rev" >> "$GITHUB_OUTPUT"
           echo "version=$version" >> "$GITHUB_OUTPUT"
@@ -159,19 +158,12 @@ jobs:
           APPLE_API_KEY: ${{ runner.os == 'macOS' && format('{0}/AppStoreConnect.p8', runner.temp) || '' }}
           APPLE_API_KEY_ID: ${{ runner.os == 'macOS' && secrets.APPLE_API_KEY_ID || '' }}
           APPLE_API_ISSUER: ${{ runner.os == 'macOS' && secrets.APPLE_API_ISSUER || '' }}
-      # The installers, and electron-builder's update files (*.yml, *.blockmap)
       - name: Upload build
         uses: actions/upload-artifact@v7
         with:
           name: electron-${{ runner.os }}
           path: |
-            dist/electron/Packaged/*.exe
-            dist/electron/Packaged/*.dmg
-            dist/electron/Packaged/*.zip
-            dist/electron/Packaged/*.AppImage
-            dist/electron/Packaged/*.blockmap
-            dist/electron/Packaged/*.yml
-            !dist/electron/Packaged/builder-debug.yml
+            dist/electron/Packaged/*
           if-no-files-found: error
           # Installers are large, and every run makes them
           retention-days: 14
@@ -189,8 +181,9 @@ jobs:
           find . -maxdepth 1 -type f -exec gh release upload "$TAG" --clobber {} +
           find . -maxdepth 1 -type f >> "$GITHUB_STEP_SUMMARY"
 
-  # Builds the docker image for every platform (src-docker/compose.yaml) and pushes it to
-  # ghcr.io/ceruleansonar/sonarview, run-<run>.<attempt>, which names exactly this run's image. Attaches sonarview-docker-image.txt to the draft release so that it can be transferred to dockerhub on publish.
+  # Builds the docker image for every platform (src-docker/compose.yaml) and pushes it to ghcr.io.
+  # For a release, attaches a reference, sonarview-docker-image.txt, to the draft release, so that
+  # publish.yml can copy the image to Docker Hub when the release is published.
   docker:
     needs: checkout
     runs-on: ubuntu-26.04
@@ -232,19 +225,17 @@ jobs:
                    labels:
                       org.opencontainers.image.revision: ${{ needs.checkout.outputs.rev }}
           EOF
-          mkdir -p "$RUNNER_TEMP/docker-image"
-          echo "$ref" > "$RUNNER_TEMP/docker-image/sonarview-docker-image.txt"
+          echo "$ref" > "$RUNNER_TEMP/sonarview-docker-image.txt"
           echo "Pushed \`$ref\`" >> "$GITHUB_STEP_SUMMARY"
       - name: Upload image reference
         uses: actions/upload-artifact@v7
         with:
-          name: docker-image
-          path: ${{ runner.temp }}/docker-image/
-          if-no-files-found: error
+          path: ${{ runner.temp }}/sonarview-docker-image.txt
+          archive: false
       - name: Attach image reference to draft release
         if: ${{ inputs.release }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
           TAG: ${{ needs.checkout.outputs.tag }}
-        run: gh release upload "$TAG" --clobber "$RUNNER_TEMP/docker-image/sonarview-docker-image.txt"
+        run: gh release upload "$TAG" --clobber "$RUNNER_TEMP/sonarview-docker-image.txt"
