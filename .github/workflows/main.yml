@@ -1,7 +1,5 @@
 name: SonarView
 on:
-  schedule:
-    - cron: "0 6 * * *" # daily at 6 am
   workflow_dispatch:
     inputs:
       updaterev:
@@ -11,7 +9,7 @@ on:
       release:
         type: boolean
         description: Create a draft release?
-        default: false
+        default: true
 defaults:
   run:
     shell: bash
